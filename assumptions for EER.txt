@@ -1,5 +1,0 @@
-Assumptions:
-1.This database will cover all of the actors and directors, no matter if they have a job.
-2.Series and corresponding episodes can be put into the database, even before actors and directors are determined.
-3.The roles of actors and directors are seperate, which means one person cannot play two roles together.
-4.It is allowed that there is a series in the database when the corronsponding episodes are not determined.
