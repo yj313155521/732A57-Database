@@ -1,7 +1,3 @@
-/*Lab 2, Shipeng Liu (shili506) and Jin Yan (jinya425)*/
-SOURCE company_schema.sql;
-SOURCE company_data.sql;
-
 /*Question 1: List all employees, i.e., all tuples in the jbemployee relation.*/
 SELECT *
 FROM jbemployee;
@@ -10,7 +6,7 @@ FROM jbemployee;
 we mean the name attribute in the jbdept relation.*/
 SELECT name
 FROM jbdept
-ORDER BY name;
+ORDER BY name ASC;
 
 /*Question 3: What parts are not in store? Note that such parts have the value 0 (zero)
 for the qoh attribute (qoh = quantity on hand).*/
@@ -22,7 +18,7 @@ WHERE  qoh = 0;
 10000 (included)?*/
 SELECT id, name
 FROM jbemployee
-WHERE 9000 < salary <10000;
+WHERE 9000 <= salary AND salary <=10000;
 
 /*Question 5: List all employees together with the age they had when they started 
 working? Hint: use the startyear attribute and calculate the age in the 
@@ -33,7 +29,7 @@ FROM jbemployee;
 /*Question 6: List all employees who have a last name ending with “son”.*/
 SELECT *
 FROM jbemployee
-WHERE name LIKE '%son';
+WHERE name LIKE '%son,%';
 
 /*Question 7: Which items (note items, not parts) have been delivered by a supplier 
 called Fisher-Price? Formulate this query by using a subquery in the 
@@ -78,18 +74,20 @@ WHERE color = 'black';
 total weight of all parts that the supplier has delivered? Do not forget to
 take the quantity of delivered parts into account. Note that one row 
 should be returned for each supplier.*/
-SELECT supplier, SUM(quan * weight)
-FROM (SELECT * 
-		FROM jbsupply 
-        WHERE supplier IN (
-							SELECT id 
-							FROM jbsupplier 
-                            WHERE city IN (
-											SELECT id 
-											FROM jbcity 
-											WHERE state ='Mass'))) AS One INNER JOIN jbparts AS Two ON One.part = Two.id
 
-GROUP BY supplier;
+SELECT name, total_weight
+FROM(
+	SELECT supplier, SUM(quan * weight) 'total_weight'
+	FROM (SELECT * 
+			FROM jbsupply 
+			WHERE supplier IN (
+								SELECT id 
+								FROM jbsupplier 
+								WHERE city IN (
+												SELECT id 
+												FROM jbcity 
+												WHERE state ='Mass'))) AS One INNER JOIN jbparts AS Two ON One.part = Two.id
+	GROUP BY supplier) AS Three INNER JOIN jbsupplier on Three.supplier = jbsupplier.id;
 
 /*Question 14: Create a new relation with the same attributes as the jbitems relation by 
 using the CREATE TABLE command where you define every attribute 
@@ -106,13 +104,17 @@ CREATE TABLE NEW_TABLE(
             
             constraint primary key (id),
             
-            constraint FOREIGN KEY (id) references jbitem (id)
+            constraint FOREIGN KEY (dept) references jbdept (id),
+            constraint FOREIGN KEY (supplier) references jbsupplier(id)
             );
             
 INSERT INTO NEW_TABLE
 SELECT *
 FROM jbitem
 WHERE price < (SELECT AVG(price) FROM jbitem);
+
+
+drop table NEW_TABLE;
 
 /*Question 15: Create a view that contains the items that cost less than the average 
 price for items.*/
@@ -188,4 +190,6 @@ SELECT ID_S, Name_S, ID_I, Name_I, quantity "Quantity_sold"
 FROM (SELECT jbsupplier.id "ID_S", jbsupplier.name "Name_S", jbitem.id "ID_I", jbitem.name "Name_I"
 		FROM jbsupplier, jbitem
         WHERE jbsupplier.id = jbitem.supplier) AS One LEFT JOIN jbsale ON One.ID_I = jbsale.item;
+
+
 
