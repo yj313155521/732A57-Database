@@ -1,3 +1,4 @@
+#------TRIGGER----------
 CREATE TRIGGER issue_ticketnumbers
 BEFORE INSERT ON BOOKED
 FOR EACH ROW

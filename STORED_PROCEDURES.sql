@@ -1,3 +1,5 @@
+# --------------STORED_PROCEDURES------------
+
 # Procedure call: addReservation(departure_airport_code, arrival_airport_code, year, week, day, time, number_of_passengers, output_reservation_nr);
 delimiter //
 CREATE PROCEDURE addReservation(IN departure_airport_code VARCHAR(3), IN arrival_airport_code VARCHAR(3), IN year INT, IN week INT, IN day VARCHAR(10), IN time time, IN number_of_passengers INT, OUT output_reservation_nr INT)
@@ -26,7 +28,8 @@ BEGIN
 			INSERT INTO RESERVE VALUES(passport_number,reservation_nr);
 		END IF;
 	ELSE 
-        SET MESSAGE_TEXT = 'The given reservation number does not exist';
+        SELECT  'The given reservation number does not exist' AS "MESSAGE";
+        
     END IF;
 END;	
 //
@@ -35,8 +38,18 @@ END;
 delimiter //
 CREATE PROCEDURE addContact(IN reservation_nr INT,IN passport_number INT, IN email VARCHAR(30), IN phone BIGINT)
 BEGIN
-	INSERT INTO CONTACT VALUES(passport_number,email,phone);
-    UPDATE RESERVATION SET CONTACT_ID = passport_number WHERE RESERVATION_NUMBER = reservation_nr;
+	SET @n = (SELECT COUNT(*) FROM RESERVATION WHERE RESERVATION_NUMBER = reservation_nr);
+    SET @n2 = (SELECT COUNT(*) FROM PASSENGER WHERE PASSPORTNUMBER = passport_number);
+    IF @n>0 THEN
+			IF @n2 >0 THEN
+				INSERT INTO CONTACT VALUES(passport_number,email,phone);
+				UPDATE RESERVATION SET CONTACT_ID = passport_number WHERE RESERVATION_NUMBER = reservation_nr;
+			ELSE
+				SELECT 'The person is not a passenger of the reservation' AS "MESSAGE";
+			END IF;
+	ELSE 
+        SELECT  'The given reservation number does not exist' AS "MESSAGE";
+	END IF;
 END;
 //
 
